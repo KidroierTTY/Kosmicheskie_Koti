@@ -35,8 +35,14 @@ lasers = pg.sprite.Group()
 space = pg.image.load("фон.png").convert()
 space = pg.transform.scale(space, size)
 
+heart = pg.image.load("сердце.png").convert_alpha()
+heart = pg.transform.scale(heart, (30, 30))
+heart_count = 3
+
 captian = Captain()
 alien = Alien()
+
+starship = Starship()
 
 start_text = ["Мы засекли сигнал с планеты Мур.",
               "",
@@ -75,6 +81,13 @@ text_number = 0
 
 f1 = pg.font.Font("шрифт.otf", 26)
 
+pg.mixer.music.load("музыка.wav")
+pg.mixer.music.set_volume(0.2)
+pg.mixer.music.play()
+
+laser_sound = pg.mixer.Sound("звук лазера.wav")
+win_sound = pg.mixer.Sound("звук победы.wav")
+
 while is_running:
 
     # СОБЫТИЯ
@@ -86,7 +99,8 @@ while is_running:
                 text_number += 2
                 if text_number > len(start_text):
                     text_number = 0
-                    mode = "metiorites"
+                    mode = "meteorites"
+                    start_time = time.time()
 
             if mode == "alien_scene":
                 text_number += 2
@@ -95,6 +109,13 @@ while is_running:
                     alien.rect.topleft = (-30, 600)
                     alien.mode = "up"
                     mode = "moon"
+                    start_time = time.time()
+                    starship.switch_mode()
+
+            if mode == "moon":
+                if event.key == pg.K_SPACE:
+                    lasers.add(Laser(starship.rect.midtop))
+                    laser_sound.play()
 
             if mode == "final_scene":
                 text_number += 2
@@ -106,13 +127,59 @@ while is_running:
         dialogue_mode(captian, start_text)
 
     if mode == "meteorites":
-        ...
+        if time.time() - start_time > 5.0:
+            mode = "alien_scene"
+
+        if random.randint(1, 100) == 1:
+            meteorites.add(Meteorite())
+
+        starship.update()
+        meteorites.update()
+
+        hits = pg.sprite.spritecollide(starship, meteorites, True)
+        for hit in hits:
+            heart_count -= 1
+            if heart_count <= 0:
+                is_running = False
+
+        screen.blit(space, (0, 0))
+        screen.blit(starship.image, starship.rect)
+        meteorites.draw(screen)
+
+        for i in range(heart_count):
+            screen.blit(heart, (i * 30, 0))
 
     if mode == "alien_scene":
         dialogue_mode(alien, alien_text)
 
     if mode == "moon":
-        ...
+        if time.time() - start_time > 5.0:
+            mode = "final_scene"
+            pg.mixer.music.fadeout(3)
+            win_sound.play()
+
+        if random.randint(1, 30) == 1:
+            mice.add(Mouse_starship())
+
+        starship.update()
+        mice.update()
+        lasers.update()
+
+        hits = pg.sprite.spritecollide(starship, mice, True)
+        for hit in hits:
+            heart_count -= 1
+            if heart_count <= 0:
+                is_running = False
+
+        hits = pg.sprite.groupcollide(lasers, mice, True, True)
+
+        screen.blit(space, (0, 0))
+        screen.blit(starship.image, starship.rect)
+        mice.draw(screen)
+        lasers.draw(screen)
+
+        for i in range(heart_count):
+            screen.blit(heart, (i * 30, 0))
 
     if mode == "final_scene":
         dialogue_mode(alien, final_text)

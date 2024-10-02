@@ -14,7 +14,6 @@ def dialogue_mode(sprite, text):
         text2 = f1.render(text[text_number + 1], True, pg.Color("white"))
         screen.blit(text2, (280, 470))
 
-
 pg.init()
 pg.mixer.init()
 
@@ -73,9 +72,7 @@ final_text = ["Огромное вам спасибо,",
               "Капитан Василий и его штурман получают",
               "орден SKYSMART.",
               "А также несколько бутылок нашей",
-              "лучшей валерьянки.",
-              "",
-              ""]
+              "лучшей валерьянки."]
 
 text_number = 0
 
@@ -119,7 +116,7 @@ while is_running:
 
             if mode == "final_scene":
                 text_number += 2
-                if text_number > len(alien_text):
+                if text_number >= len(final_text):
                     text_number = 0
                     mode = "end"
     # ОБНОВЛЕНИЯ
@@ -127,10 +124,10 @@ while is_running:
         dialogue_mode(captian, start_text)
 
     if mode == "meteorites":
-        if time.time() - start_time > 5.0:
+        if time.time() - start_time > 15.0:
             mode = "alien_scene"
 
-        if random.randint(1, 100) == 1:
+        if random.randint(1, 60) == 1:
             meteorites.add(Meteorite())
 
         starship.update()
@@ -153,12 +150,12 @@ while is_running:
         dialogue_mode(alien, alien_text)
 
     if mode == "moon":
-        if time.time() - start_time > 5.0:
+        if time.time() - start_time > 15.0:
             mode = "final_scene"
             pg.mixer.music.fadeout(3)
             win_sound.play()
 
-        if random.randint(1, 30) == 1:
+        if random.randint(1, 60) == 1:
             mice.add(Mouse_starship())
 
         starship.update()
@@ -180,7 +177,6 @@ while is_running:
 
         for i in range(heart_count):
             screen.blit(heart, (i * 30, 0))
-
     if mode == "final_scene":
         dialogue_mode(alien, final_text)
 
